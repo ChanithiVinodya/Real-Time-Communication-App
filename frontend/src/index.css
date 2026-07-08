@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #0a1220; /* Prussian blue darker */
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(28, 47, 77, 0.6) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(64, 13, 1, 0.18) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(147, 174, 191, 0.08) 0px, transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  
+  ::selection {
+    background-color: #F2CEAE;
+    color: #1C2F4D;
+  }
+}
+
+.glass {
+  background: rgba(28, 47, 77, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(147, 174, 191, 0.15);
+}
+
+.glass-card {
+  background: rgba(20, 35, 58, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(242, 206, 174, 0.15);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(10, 18, 32, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(147, 174, 191, 0.3);
+  border-radius: 9px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F2CEAE;
+}
