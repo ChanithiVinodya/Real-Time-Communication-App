@@ -5,11 +5,13 @@ const rooms = new Map();
 
 export function registerSignaling(io) {
   io.on('connection', (socket) => {
-    console.log('Socket connected:', socket.id);
+    // socket.data.userId / displayName were already set by the io.use()
+    // auth middleware in index.js, from the verified JWT — never trust a
+    // display name the client sends over the wire instead.
+    console.log('Socket connected:', socket.id, socket.data.displayName);
 
-    socket.on('join-room', ({ roomCode, displayName }) => {
+    socket.on('join-room', ({ roomCode }) => {
       socket.data.roomCode = roomCode;
-      socket.data.displayName = displayName || 'Guest';
 
       if (!rooms.has(roomCode)) rooms.set(roomCode, new Set());
       const peers = rooms.get(roomCode);
@@ -25,8 +27,6 @@ export function registerSignaling(io) {
       peers.add(socket.id);
       socket.join(roomCode);
 
-      // Tell everyone already in the room that a new peer joined, so they
-      // know to expect (and wait for) an offer from this new socket.
       socket.to(roomCode).emit('peer-joined', {
         socketId: socket.id,
         displayName: socket.data.displayName,
@@ -45,6 +45,14 @@ export function registerSignaling(io) {
 
     socket.on('ice-candidate', ({ to, candidate }) => {
       io.to(to).emit('ice-candidate', { from: socket.id, candidate });
+    });
+
+    // Relays camera/mic on-off state so peers can show a "camera off" /
+    // "muted" indicator on each other's tiles.
+    socket.on('media-state', ({ camera, mic }) => {
+      const roomCode = socket.data.roomCode;
+      if (!roomCode) return;
+      socket.to(roomCode).emit('media-state', { from: socket.id, camera, mic });
     });
 
     socket.on('disconnect', () => {
