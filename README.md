@@ -26,7 +26,7 @@
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/screenshots/lobby.png" alt="Lobby / join screen" />
+      <img width="598" height="457" alt="Screenshot 2026-07-09 190352" src="https://github.com/user-attachments/assets/a4f8dc30-2788-40a9-ba24-c0703daf974f" />
       <p align="center"><sub><b>Lobby</b> — sign in and join a room</sub></p>
     </td>
     <td width="50%">
@@ -36,11 +36,11 @@
   </tr>
   <tr>
     <td width="50%">
-      <img src="docs/screenshots/whiteboard.png" alt="Collaborative whiteboard" />
+      <img width="1857" height="992" alt="whiteboard" src="https://github.com/user-attachments/assets/c28d045f-0bfe-4eb4-ad82-7b97155b86c1" />
       <p align="center"><sub><b>Whiteboard</b> — real-time collaborative drawing</sub></p>
     </td>
     <td width="50%">
-      <img src="docs/screenshots/screenshare.png" alt="Screen sharing" />
+      <img width="1847" height="993" alt="screenshare" src="https://github.com/user-attachments/assets/0ba41a9f-46dc-4ff4-9cd2-de1a98af8117" />
       <p align="center"><sub><b>Screen share</b> — swap tracks with no renegotiation</sub></p>
     </td>
   </tr>
