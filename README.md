@@ -15,7 +15,7 @@
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-3-38BDF8?logo=tailwindcss&logoColor=white)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#-license)
 
-**[🎬 Watch the demo](#-demo-video)** · **[✨ Features](#-features)** · **[🚀 Quick start](#-quick-start)** · **[🔐 Security](#-security-highlights)**
+ **[✨ Features](#-features)** · **[🚀 Quick start](#-quick-start)** · **[🔐 Security](#-security-highlights)**
 
 </div>
 
@@ -30,13 +30,13 @@
       <p align="center"><sub><b>Lobby</b> — sign in and join a room</sub></p>
     </td>
     <td width="50%">
-      <img src="docs/screenshots/call.png" alt="Multi-user video call" />
+      <img width="1857" height="992" alt="Screenshot 2026-07-08 231931" src="https://github.com/user-attachments/assets/cb8f9b27-2ebf-49ec-9e48-afad91ef210d" />
       <p align="center"><sub><b>Video call</b> — multi-user WebRTC mesh</sub></p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <img width="1857" height="992" alt="whiteboard" src="https://github.com/user-attachments/assets/c28d045f-0bfe-4eb4-ad82-7b97155b86c1" />
+      <img width="1091" height="791" alt="Screenshot 2026-07-09 190722" src="https://github.com/user-attachments/assets/1e1fc758-0c93-42ed-adcb-bb11e256e4f6" />
       <p align="center"><sub><b>Whiteboard</b> — real-time collaborative drawing</sub></p>
     </td>
     <td width="50%">
@@ -45,24 +45,6 @@
     </td>
   </tr>
 </table>
-
-> 📌 **TODO:** Drop your screenshots into `docs/screenshots/` using the filenames above (or update the paths). Aim for 1280×800 or similar, PNG, and crop out browser chrome for a cleaner look.
-
-<br/>
-
-## 🎬 Demo Video
-
-<div align="center">
-
-[![Watch the demo](docs/screenshots/video-thumbnail.png)](https://your-video-link-goes-here)
-
-*▶ Click to watch a 2–3 minute walkthrough*
-
-</div>
-
-> 📌 **TODO:** Record a short screen capture (Loom, YouTube unlisted, or a `.mp4` in `docs/`) showing: signing up → joining a room from two browser windows → multi-user video → screen share → whiteboard → file sharing → camera/mic toggle. Replace the link and thumbnail above. A 2-minute video that shows the whole flow working is worth more to a recruiter than any amount of README text.
-
-<br/>
 
 ## ✨ Features
 
@@ -203,14 +185,7 @@ meshmeet/
 
 Built as a hands-on deep dive into real-time systems — WebRTC's offer/answer/ICE dance, NAT traversal, mesh topology tradeoffs, and the security considerations that come with handling live media and user files. The full phased build plan (and the reasoning behind each architectural decision) is documented in [`rtc-app-project-plan.md`](./rtc-app-project-plan.md).
 
-<br/>
 
-## 📄 License
-
-MIT — see [`LICENSE`](./LICENSE) for details.
-
-<br/>
-
-<div align="center">
-<sub>Built by <a href="https://github.com/your-username">Your Name</a> — <a href="https://linkedin.com/in/your-profile">LinkedIn</a> · <a href="mailto:your@email.com">Email</a></sub>
+<div>
+Built by <a href="https://github.com/ChanithiVinodya">Chanithi Vinodya</a> 
 </div>
