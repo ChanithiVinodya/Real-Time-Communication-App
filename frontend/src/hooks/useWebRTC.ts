@@ -1,28 +1,31 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { socket } from "../lib/socket";
 import { API_BASE_URL } from "../lib/api";
+import { getToken } from "../lib/auth";
 
 interface RemotePeer {
   socketId: string;
   displayName: string;
   stream?: MediaStream;
+  cameraOn?: boolean;
+  micOn?: boolean;
 }
 
-export function useWebRTC(roomCode: string, displayName: string) {
+export function useWebRTC(roomCode: string) {
   // "localStream" is whatever should be shown in the user's own video tile —
   // the camera feed normally, or the screen share while one is active.
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [peers, setPeers] = useState<Record<string, RemotePeer>>({});
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(true);
+  const [isMicOn, setIsMicOn] = useState(true);
 
   const peerConnections = useRef<Record<string, RTCPeerConnection>>({});
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
 
   // Starts STUN-only; populated with a time-limited TURN credential once
-  // fetched from the backend (see /api/turn/credentials). Falling back to
-  // STUN-only if that fetch fails just means P2P won't succeed across
-  // strict/symmetric NATs — everything else still works.
+  // fetched from the backend (see /api/turn/credentials).
   const iceServersRef = useRef<RTCConfiguration>({
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   });
@@ -30,12 +33,10 @@ export function useWebRTC(roomCode: string, displayName: string) {
   const createPeerConnection = useCallback((remoteSocketId: string) => {
     const pc = new RTCPeerConnection(iceServersRef.current);
 
-    // Attach our local (camera) tracks so the remote peer receives our audio/video.
     cameraStreamRef.current?.getTracks().forEach((track) => {
       pc.addTrack(track, cameraStreamRef.current!);
     });
 
-    // Fires when the remote peer's audio/video track arrives.
     pc.ontrack = (event) => {
       setPeers((prev) => ({
         ...prev,
@@ -49,7 +50,6 @@ export function useWebRTC(roomCode: string, displayName: string) {
       }));
     };
 
-    // Forward our ICE candidates to the remote peer via the signaling server.
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         socket.emit("ice-candidate", {
@@ -63,7 +63,36 @@ export function useWebRTC(roomCode: string, displayName: string) {
     return pc;
   }, []);
 
-  // --- Screen sharing -------------------------------------------------
+  // --- Camera / mic toggles --------------------------------------------
+  //
+  // We flip `track.enabled` rather than stopping the track or
+  // renegotiating: the track keeps flowing to every peer connection, it
+  // just stops carrying frames/audio. Cheaper and instant, and it's the
+  // same mechanism every major video-call app uses for mute buttons.
+
+  const toggleCamera = useCallback(() => {
+    const track = cameraStreamRef.current?.getVideoTracks()[0];
+    if (!track) return;
+    track.enabled = !track.enabled;
+    setIsCameraOn(track.enabled);
+    socket.emit("media-state", {
+      camera: track.enabled,
+      mic: cameraStreamRef.current?.getAudioTracks()[0]?.enabled ?? true,
+    });
+  }, []);
+
+  const toggleMic = useCallback(() => {
+    const track = cameraStreamRef.current?.getAudioTracks()[0];
+    if (!track) return;
+    track.enabled = !track.enabled;
+    setIsMicOn(track.enabled);
+    socket.emit("media-state", {
+      camera: cameraStreamRef.current?.getVideoTracks()[0]?.enabled ?? true,
+      mic: track.enabled,
+    });
+  }, []);
+
+  // --- Screen sharing ----------------------------------------------------
 
   const stopScreenShare = useCallback(() => {
     const cameraTrack = cameraStreamRef.current?.getVideoTracks()[0];
@@ -107,14 +136,12 @@ export function useWebRTC(roomCode: string, displayName: string) {
     else startScreenShare();
   }, [isScreenSharing, startScreenShare, stopScreenShare]);
 
-  // --- Signaling + mesh setup -----------------------------------------
+  // --- Signaling + mesh setup -------------------------------------------
 
   useEffect(() => {
     let cancelled = false;
 
     async function start() {
-      // Fetch a time-limited TURN credential before doing anything else,
-      // so it's available by the time the first peer connection is made.
       try {
         const res = await fetch(`${API_BASE_URL}/api/turn/credentials`);
         const creds = await res.json();
@@ -143,10 +170,13 @@ export function useWebRTC(roomCode: string, displayName: string) {
       cameraStreamRef.current = stream;
       setLocalStream(stream);
 
+      // The server verifies this token before allowing the connection at
+      // all (see the io.use() middleware in backend/src/index.js) and
+      // derives the display name from it — the client never sends one.
+      socket.auth = { token: getToken() };
       socket.connect();
-      socket.emit("join-room", { roomCode, displayName });
+      socket.emit("join-room", { roomCode });
 
-      // We're the newcomer — initiate an offer to each peer already present.
       socket.on(
         "existing-peers",
         async (existingPeers: { socketId: string; displayName: string }[]) => {
@@ -160,19 +190,18 @@ export function useWebRTC(roomCode: string, displayName: string) {
         },
       );
 
-      // Someone joined after us — just register them, we wait for their offer.
       socket.on(
         "peer-joined",
         ({
           socketId,
-          displayName: name,
+          displayName,
         }: {
           socketId: string;
           displayName: string;
         }) => {
           setPeers((prev) => ({
             ...prev,
-            [socketId]: { socketId, displayName: name },
+            [socketId]: { socketId, displayName },
           }));
         },
       );
@@ -220,6 +249,28 @@ export function useWebRTC(roomCode: string, displayName: string) {
         },
       );
 
+      socket.on(
+        "media-state",
+        ({
+          from,
+          camera,
+          mic,
+        }: {
+          from: string;
+          camera: boolean;
+          mic: boolean;
+        }) => {
+          setPeers((prev) => ({
+            ...prev,
+            [from]: {
+              ...(prev[from] || { socketId: from, displayName: "Peer" }),
+              cameraOn: camera,
+              micOn: mic,
+            },
+          }));
+        },
+      );
+
       socket.on("peer-left", ({ socketId }: { socketId: string }) => {
         peerConnections.current[socketId]?.close();
         delete peerConnections.current[socketId];
@@ -240,6 +291,7 @@ export function useWebRTC(roomCode: string, displayName: string) {
       socket.off("offer");
       socket.off("answer");
       socket.off("ice-candidate");
+      socket.off("media-state");
       socket.off("peer-left");
       socket.disconnect();
       Object.values(peerConnections.current).forEach((pc) => pc.close());
@@ -247,7 +299,16 @@ export function useWebRTC(roomCode: string, displayName: string) {
       cameraStreamRef.current?.getTracks().forEach((t) => t.stop());
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
-  }, [roomCode, displayName, createPeerConnection]);
+  }, [roomCode, createPeerConnection]);
 
-  return { localStream, peers, isScreenSharing, toggleScreenShare };
+  return {
+    localStream,
+    peers,
+    isScreenSharing,
+    toggleScreenShare,
+    isCameraOn,
+    isMicOn,
+    toggleCamera,
+    toggleMic,
+  };
 }

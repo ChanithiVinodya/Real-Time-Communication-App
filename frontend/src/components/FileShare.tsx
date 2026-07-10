@@ -73,11 +73,27 @@ export default function FileShare({ roomCode }: { roomCode: string }) {
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg p-3 text-white">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-medium">Shared files</h2>
-        <label className="px-3 py-1 text-sm rounded bg-blue-600 hover:bg-blue-500 cursor-pointer">
-          {uploading ? 'Uploading…' : 'Upload file'}
+    <div className="glass-card rounded-2xl p-6">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-5">
+        <div>
+          <h2 className="font-serif text-xl text-pistachio tracking-wide">
+            Shared Room Artifacts
+          </h2>
+          <p className="text-[9px] font-semibold tracking-widest uppercase text-blue-dust/40 mt-0.5 font-sans">
+            Instantly distribute files in real-time
+          </p>
+        </div>
+
+        {/* Upload button */}
+        <label
+          className={`flex-shrink-0 px-4 py-1.5 text-[11px] font-semibold tracking-widest uppercase rounded border cursor-pointer transition-all duration-150 font-sans ${
+            uploading
+              ? 'border-blue-dust/20 text-blue-dust/40 cursor-not-allowed'
+              : 'border-pistachio/50 text-pistachio hover:bg-pistachio/10'
+          }`}
+        >
+          {uploading ? 'Uploading…' : 'Upload File'}
           <input
             ref={inputRef}
             type="file"
@@ -88,24 +104,30 @@ export default function FileShare({ roomCode }: { roomCode: string }) {
         </label>
       </div>
 
+      {/* File list */}
       {files.length === 0 ? (
-        <p className="text-sm text-gray-400">No files shared yet.</p>
+        <p className="text-[12px] text-blue-dust/40 font-sans py-4 text-center">
+          No files shared yet. Upload something to get started.
+        </p>
       ) : (
         <ul className="space-y-2">
           {files.map((f) => (
             <li
               key={f.id}
-              className="flex items-center justify-between text-sm bg-gray-800 rounded px-3 py-2"
+              className="flex items-center justify-between bg-prussian-blue-dark/50 border border-blue-dust/10 rounded-xl px-4 py-3 hover:border-blue-dust/20 transition-colors"
             >
-              <div className="min-w-0">
-                <p className="truncate">{f.originalName}</p>
-                <p className="text-xs text-gray-400">
-                  {formatSize(f.size)} · shared by {f.uploadedBy}
+              <div className="min-w-0 mr-4">
+                <p className="text-[13px] text-white/80 font-medium truncate font-sans">
+                  {f.originalName}
+                </p>
+                <p className="text-[10px] text-blue-dust/40 tracking-wide uppercase font-sans mt-0.5">
+                  {formatSize(f.size)} &bull; Shared by {f.uploadedBy}
                 </p>
               </div>
               <a
                 href={`${API_BASE_URL}${f.downloadUrl}`}
-                className="text-blue-400 hover:text-blue-300 ml-3 shrink-0"
+                className="flex-shrink-0 px-3 py-1 text-[10px] font-semibold tracking-widest uppercase rounded border border-blue-dust/25 text-blue-dust hover:border-pistachio/50 hover:text-pistachio transition-all duration-150 font-sans"
+                download
               >
                 Download
               </a>
